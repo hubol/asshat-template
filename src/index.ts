@@ -34,6 +34,7 @@ async function initialize() {
             initializeAsshatAudioContext({
                 gestureEl: () => {
                     const el = document.getElementById("user_gesture")!;
+                    el.addEventListener("click", () => document.body.requestFullscreen().catch(console.error));
                     el.classList.add("show");
                     return el;
                 },
