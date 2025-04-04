@@ -1,6 +1,8 @@
 # asshat-template
 ### Template for asshat game projects
 
+Ejected from IguaRPG 2 on April 4, 2025.
+
 1. Copy the contents of this repo to a new Git repo
 2. Before release, you may wish to configure the following:
     - `package.json`: `name`, `description` property
