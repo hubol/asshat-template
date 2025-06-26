@@ -43,6 +43,15 @@ Below are some examples of games created using various versions of this engine.
 
 ## Changelog
 
+#### 2025-06-26
+
+Added from `igua-rpg2`:
+- TypeScript's `noImplictAny` has been enabled
+- Some additional characters, kerning for fonts
+- Slightly reworked source code generation for levels to improve TypeScript performance in VSCode
+- Dev server supports saving (HTTP `GET`), writing (HTTP `POST`) to local file system at `/fs`
+- Miscellaneous utilities: `compileResetter`, `onMutate` Coro
+
 #### 2025-04-10
 
 Added from `igua-rpg2`:

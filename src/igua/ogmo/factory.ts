@@ -1,12 +1,11 @@
 import { Container, DisplayObject, Sprite, Texture } from "pixi.js";
-import { OgmoProject } from "../../assets/generated/levels/generated-ogmo-project-data";
 import { Logger } from "../../lib/game-engine/logger";
 import { container } from "../../lib/pixi/container";
 import { scene } from "../globals";
 import { ogmoAddToLayer } from "./add-to-layer";
 
 export namespace OgmoFactory {
-    interface EntityBase {
+    export interface EntityBase<TValues = DefaultEntityValues> {
         x: number;
         y: number;
         uid?: number;
@@ -14,21 +13,16 @@ export namespace OgmoFactory {
         flippedY?: boolean;
         width?: number;
         height?: number;
+        rotation?: number;
         tint?: number;
+        values: TValues;
     }
 
-    export interface Entity<TEntityName extends OgmoProject.Entities.Names> extends EntityBase {
-        values: OgmoProject.Entities.Values[TEntityName];
-    }
-
-    export interface EntityCommon extends EntityBase {
-        values: EntityCommonValues & Record<string, any>;
-    }
-
-    interface EntityCommonValues {
+    type DefaultEntityValues = {
+        [key: string]: any;
         name: string;
         visible?: boolean;
-    }
+    };
 
     export interface Decal {
         x: number;
@@ -50,7 +44,7 @@ export namespace OgmoFactory {
 
     export function createEntity<TFn extends (...args: any[]) => any>(
         fn: TFn,
-        entity: OgmoFactory.EntityCommon,
+        entity: OgmoFactory.EntityBase,
         layerName: string,
     ): ReturnType<TFn> {
         if (typeof fn !== "function") {
@@ -86,6 +80,10 @@ export namespace OgmoFactory {
             obj.scale.y *= -1;
         }
 
+        if (entity.rotation !== undefined) {
+            obj.angle = entity.rotation;
+        }
+
         if (entity.tint !== undefined) {
             obj.tint = entity.tint;
         }
@@ -102,7 +100,7 @@ export namespace OgmoFactory {
     const decalGroups = new Map<string, Container>();
 
     export function createDecal(texture: Texture, decal: OgmoFactory.Decal, layerName: string) {
-        const spr = Sprite.from(texture).at(decal.x, decal.y);
+        const spr = Sprite.from(texture).at(decal.x, decal.y).track(createDecal);
         spr.scale.set(decal.scaleX, decal.scaleY);
         spr.angle = decal.rotation;
         spr.anchor.set(decal.originX, decal.originY);
@@ -146,15 +144,10 @@ export namespace OgmoFactory {
         return obj;
     }
 
-    export function createLevel<TFn extends (...args: any[]) => any>(level: OgmoFactory.Level, fn: TFn): TFn {
-        return (() => {
-            scene.level.width = level.width;
-            scene.level.height = level.height;
-            scene.style.backgroundTint = level.backgroundTint;
-            decalGroups.clear();
-            const result = fn();
-            decalGroups.clear();
-            return result;
-        }) as TFn;
+    export function applyLevel(level: OgmoFactory.Level) {
+        scene.level.width = level.width;
+        scene.level.height = level.height;
+        scene.style.backgroundTint = level.backgroundTint;
+        decalGroups.clear();
     }
 }
