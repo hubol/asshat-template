@@ -35,12 +35,16 @@ declare module "pixi.js" {
         masked(value: Container | MaskData | null): this;
         zIndexed(value: number): this;
 
+        getWorldCenter(): VectorSimple;
+        // Not totally sure why passing a Point would be useful...
         getWorldPosition(point?: Point): VectorSimple;
     }
 
     interface Container {
         pivoted(vector: VectorSimple): this;
         pivoted(x: number, y: number): this;
+        pivotedUnit(vector: VectorSimple): this;
+        pivotedUnit(x: number, y: number): this;
         sized(vector: VectorSimple): this;
         sized(width: number, height: number): this;
         autoSorted(): this;
@@ -91,6 +95,21 @@ Object.defineProperties(DisplayObject.prototype, {
             }
             else {
                 this.transform.pivot.set(<number> x_vector, y);
+            }
+
+            return this;
+        },
+    },
+    pivotedUnit: {
+        value: function (this: Container, x_vector: number | VectorSimple, y?: number) {
+            if (y === undefined) {
+                this.transform.pivot.set(
+                    Math.round((<VectorSimple> x_vector).x * this.width),
+                    Math.round((<VectorSimple> x_vector).y * this.height),
+                );
+            }
+            else {
+                this.transform.pivot.set(Math.round(<number> x_vector * this.width), Math.round(y * this.height));
             }
 
             return this;
@@ -154,6 +173,19 @@ Object.defineProperties(DisplayObject.prototype, {
         value: function (this: DisplayObject, zIndex: number) {
             this.zIndex = zIndex;
             return this;
+        },
+    },
+    getWorldCenter: {
+        value: function (this: DisplayObject): VectorSimple {
+            const stage = EngineConfig.worldStage;
+            if (this.parent === stage) {
+                return this;
+            }
+
+            return this.getBounds(false, r)
+                .getCenter()
+                .vround()
+                .add(-stage.x, -stage.y);
         },
     },
     getWorldPosition: {

@@ -43,6 +43,20 @@ Below are some examples of games created using various versions of this engine.
 
 ## Changelog
 
+#### 2025-09-02
+
+Added from `igua-rpg2`:
+- Additional kerning for fonts
+- Ogmo decal groups have a position computed from the minimum position of all children
+- Ogmo entities with a uid will mark the uid property as required
+- Expose `IguaLayers.recreateOverlay()`
+- Simple `mxnActionRepeater` mixin
+- `DisplayObject.getWorldCenter()`
+- `Container.pivotedUnit()`
+- `Container.findIs()`
+- `Sprite.trimmed()`
+- `ForceTintFilter`
+
 #### 2025-06-26
 
 Added from `igua-rpg2`:
