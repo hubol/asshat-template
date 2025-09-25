@@ -43,6 +43,13 @@ Below are some examples of games created using various versions of this engine.
 
 ## Changelog
 
+#### 2025-09-24
+
+Added from `igua-rpg2`:
+- Arrays containing exclusively non-numbers can no longer be treated as a `Vector`
+- Fixed a bug where constructing the scene graph in a particular order would prevent adding game logic to `DisplayObject`s
+- `DisplayObject.getWorldCenter` now falls back to `DisplayObject.getWorldPosition`
+
 #### 2025-09-02
 
 Added from `igua-rpg2`:
