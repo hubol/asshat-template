@@ -6,5 +6,8 @@ public/**/*
 
 node_modules/
 
+raw/labels/**/*.txt.bak
+raw/labels/**/*.json
+
 .smooch/
 smooch.tgz
