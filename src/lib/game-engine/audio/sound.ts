@@ -1,5 +1,6 @@
 import { Polar, Seconds, Unit } from "../../math/number-alias-types";
 import { Rng } from "../../math/rng";
+import { Logger } from "../logger";
 import { StereoGainNode, StereoGainNodePool } from "./stereo-gain-node-pool";
 
 export class Sound {
@@ -52,7 +53,7 @@ export class Sound {
         const stereoGainNode = this._createStereoGainNode(source);
         source.start(undefined, offset);
         this._resetParams();
-        return new SoundInstance(source, stereoGainNode);
+        return new SoundInstance(source, stereoGainNode, offset ?? 0);
     }
 
     private _createSourceNode() {
@@ -81,7 +82,16 @@ export class Sound {
 type RampableParam = "rate" | "gain" | "pan";
 
 export class SoundInstance {
-    constructor(private readonly _sourceNode: AudioBufferSourceNode, private readonly _stereoGainNode: StereoGainNode) {
+    private _lastRateSetContextTime: Seconds;
+    private _lastRateSetElapsedTime: Seconds;
+
+    constructor(
+        private readonly _sourceNode: AudioBufferSourceNode,
+        private readonly _stereoGainNode: StereoGainNode,
+        offsetSeconds: Seconds,
+    ) {
+        this._lastRateSetElapsedTime = offsetSeconds;
+        this._lastRateSetContextTime = this._sourceNode.context.currentTime;
     }
 
     private _getAudioParam(param: RampableParam) {
@@ -113,6 +123,22 @@ export class SoundInstance {
         return this;
     }
 
+    /** The approximate playhead position assuming the sound is looping */
+    get estimatedPlayheadPosition() {
+        const duration = this._sourceNode.buffer?.duration;
+        if (!duration) {
+            Logger.logAssertError("SoundInstance.estimatedPlayheadPosition", new Error("duration should be truthy"), {
+                duration,
+            });
+            return 0;
+        }
+
+        const timeSinceLastRateSet = this._sourceNode.context.currentTime - this._lastRateSetContextTime;
+        const rawElapsedTime = this._lastRateSetElapsedTime + timeSinceLastRateSet * this.rate;
+
+        return rawElapsedTime % duration;
+    }
+
     get gain() {
         return this._stereoGainNode.gain.value;
     }
@@ -134,6 +160,14 @@ export class SoundInstance {
     }
 
     set rate(value: number) {
+        if (value === this.rate) {
+            return;
+        }
+
+        const currentContextTime = this._sourceNode.context.currentTime;
+        const timeSinceLastRateSet = currentContextTime - this._lastRateSetContextTime;
+        this._lastRateSetElapsedTime += timeSinceLastRateSet * this.rate;
+        this._lastRateSetContextTime = currentContextTime;
         this._sourceNode.playbackRate.value = value;
     }
 

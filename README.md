@@ -43,6 +43,15 @@ Below are some examples of games created using various versions of this engine.
 
 ## Changelog
 
+#### 2025-12-09
+
+Added from `igua-rpg2`:
+- Various utilities
+- Adjusted repeat key behavior in `KeyListener`
+- `SoundInstance` estimates playhead position
+- `AsshatJukebox` has stop, rate change, playhead position features
+- `DisplayObject.identify` for use with `DisplayObject.is`
+
 #### 2025-09-24
 
 Added from `igua-rpg2`:

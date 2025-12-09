@@ -13,10 +13,23 @@ interface NowPlaying {
 // TODO generics?
 export class AsshatJukebox {
     private readonly _loader: MusicTrackLoader;
-    private _nowPlaying?: NowPlaying;
+    private _nowPlaying: NowPlaying | null = null;
+    private _rate = 1;
 
     constructor(private readonly _destination: AudioNode) {
         this._loader = new MusicTrackLoader(_destination);
+    }
+
+    getEstimatedPlayheadPosition(track: MusicTrack) {
+        if (this._nowPlaying?.track !== track) {
+            return 0;
+        }
+
+        return this._nowPlaying.instance.estimatedPlayheadPosition;
+    }
+
+    isPlaying(track: MusicTrack) {
+        return this._nowPlaying?.track === track;
     }
 
     play(track: MusicTrack, fadeOutMs: Milliseconds = 1000) {
@@ -24,7 +37,24 @@ export class AsshatJukebox {
         return this;
     }
 
-    private _latestPlayRequest?: MusicTrack;
+    stop() {
+        this._nowPlaying?.instance?.stop();
+        this._nowPlaying = null;
+        this._latestPlayRequest = null;
+    }
+
+    get rate() {
+        return this._rate;
+    }
+
+    set rate(value) {
+        this._rate = value;
+        if (this._nowPlaying?.instance) {
+            this._nowPlaying.instance.rate = value;
+        }
+    }
+
+    private _latestPlayRequest: MusicTrack | null = null;
 
     async playAsync(track: MusicTrack, fadeOutMs: Milliseconds = 1000) {
         if (this._latestPlayRequest === track) {
@@ -44,7 +74,7 @@ export class AsshatJukebox {
         ]);
         if (this._latestPlayRequest === track) {
             this._nowPlaying?.instance?.stop();
-            const instance = sound.loop(true).playInstance();
+            const instance = sound.loop(true).rate(this._rate).playInstance();
             this._nowPlaying = { track, instance };
         }
     }
